@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=600" />
+    <title>On-Pager SEO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+    <div class="extension-wrapper">
+
+        <!-- ═══════════════ TAB BAR ═══════════════ -->
+        <nav class="tab-bar" id="tabBar">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="headings">Headings</button>
+            <button class="tab-btn" data-tab="images">Images</button>
+            <button class="tab-btn" data-tab="links">Links</button>
+            <button class="tab-btn" data-tab="schema">Schema</button>
+            <button class="tab-btn" data-tab="render">Render</button>
+            <button class="tab-btn tab-btn--icon" data-tab="settings" title="Settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+            </button>
+        </nav>
+
+        <!-- ═══════════════ TAB PANELS ═══════════════ -->
+
+        <!-- OVERVIEW TAB -->
+        <section class="tab-panel active" id="panel-overview">
+
+            <!-- Metadata Card -->
+            <div class="overview-card">
+
+                <!-- Title Row -->
+                <div class="meta-row">
+                    <div class="meta-row__left">
+                        <span class="meta-row__icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 7 4 4 20 4 20 7" />
+                                <line x1="9" y1="20" x2="15" y2="20" />
+                                <line x1="12" y1="4" x2="12" y2="20" />
+                            </svg>
+                        </span>
+                        <span class="meta-row__label">TITLE</span>
+                    </div>
+                    <span class="meta-pill meta-pill--blue" id="titleChars">— chars</span>
+                </div>
+                <p class="meta-row__content" id="titleContent">Analyzing…</p>
+
+                <div class="meta-row__divider"></div>
+
+                <!-- Description Row -->
+                <div class="meta-row">
+                    <div class="meta-row__left">
+                        <span class="meta-row__icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        </span>
+                        <span class="meta-row__label">DESCRIPTION</span>
+                    </div>
+                    <span class="meta-pill meta-pill--green" id="descChars">— chars</span>
+                </div>
+                <p class="meta-row__content" id="descContent">Analyzing…</p>
+
+                <div class="meta-row__divider"></div>
+
+                <!-- URL Row -->
+                <div class="meta-row">
+                    <div class="meta-row__left">
+                        <span class="meta-row__icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                            </svg>
+                        </span>
+                        <span class="meta-row__label">URL</span>
+                    </div>
+                    <span class="meta-pill meta-pill--blue-solid" id="urlProtocol">—</span>
+                </div>
+                <p class="meta-row__content meta-row__content--url" id="urlContent">Analyzing…</p>
+
+                <div class="meta-row__divider"></div>
+
+                <!-- Canonical Row -->
+                <div class="meta-row">
+                    <div class="meta-row__left">
+                        <span class="meta-row__icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M2 12h20" />
+                                <path
+                                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                            </svg>
+                        </span>
+                        <span class="meta-row__label">CANONICAL</span>
+                    </div>
+                    <span class="meta-pill meta-pill--green-outline" id="canonicalStatus">—</span>
+                </div>
+                <p class="meta-row__content meta-row__content--url" id="canonicalContent">Analyzing…</p>
+
+            </div>
+
+            <!-- Robots Tags Row -->
+            <div class="robots-row">
+                <div class="robots-row__item">
+                    <div class="robots-row__header">
+                        <span class="robots-row__label">ROBOTS TAG</span>
+                        <span class="robots-row__status" id="robotsTagStatus">
+                            <!-- icon filled dynamically -->
+                        </span>
+                    </div>
+                    <span class="robots-row__value" id="robotsTagValue">Analyzing…</span>
+                </div>
+                <div class="robots-row__item">
+                    <div class="robots-row__header">
+                        <span class="robots-row__label">X-ROBOTS-TAG</span>
+                        <span class="robots-row__status" id="xRobotsTagStatus">
+                            <!-- icon filled dynamically -->
+                        </span>
+                    </div>
+                    <span class="robots-row__value" id="xRobotsTagValue">Analyzing…</span>
+                </div>
+            </div>
+
+            <!-- 2×2 Info Grid -->
+            <div class="overview-grid">
+                <div class="overview-grid__item">
+                    <span class="overview-grid__icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                    </span>
+                    <div class="overview-grid__text">
+                        <div class="overview-grid__label-row">
+                            <span class="overview-grid__label">Keywords</span>
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <span class="overview-grid__value overview-grid__value--wrap" id="keywordsValue">—</span>
+                    </div>
+                </div>
+                <div class="overview-grid__item">
+                    <span class="overview-grid__icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                    </span>
+                    <div class="overview-grid__text">
+                        <div class="overview-grid__label-row">
+                            <span class="overview-grid__label">Word Count</span>
+                        </div>
+                        <span class="overview-grid__value" id="wordCountValue">—</span>
+                    </div>
+                </div>
+                <div class="overview-grid__item">
+                    <span class="overview-grid__icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="12" cy="12" r="3" />
+                            <line x1="3" y1="8" x2="21" y2="8" />
+                        </svg>
+                    </span>
+                    <div class="overview-grid__text">
+                        <div class="overview-grid__label-row">
+                            <span class="overview-grid__label">Publisher</span>
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <span class="overview-grid__value" id="publisherValue">—</span>
+                    </div>
+                </div>
+                <div class="overview-grid__item">
+                    <span class="overview-grid__icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 5h7M9 3v2c0 4.418-2.239 8-5 8" />
+                            <path d="M5 9c2.106 0 4.5 1.75 6 4" />
+                            <path d="M12 21l4-9l4 9" />
+                            <path d="M14 17h4" />
+                        </svg>
+                    </span>
+                    <div class="overview-grid__text">
+                        <div class="overview-grid__label-row">
+                            <span class="overview-grid__label">Lang</span>
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <span class="overview-grid__value" id="languageValue">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row (Headings, Images, Links) — Individual Cards -->
+            <div class="overview-stats-grid">
+                <div class="overview-stats-card">
+                    <div class="overview-stats-card__icon overview-stats-card__icon--headings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12h8" />
+                            <path d="M4 18V6" />
+                            <path d="M12 18V6" />
+                            <path d="M17 10l3 3-3 3" />
+                        </svg>
+                    </div>
+                    <div class="overview-stats-card__text">
+                        <span class="overview-stats-card__label">HEADINGS</span>
+                        <span class="overview-stats-card__value" id="overviewHeadings">—</span>
+                    </div>
+                    <span class="overview-stats-card__sub" id="overviewHeadingsSub">H1-H6: —</span>
+                </div>
+                <div class="overview-stats-card">
+                    <div class="overview-stats-card__icon overview-stats-card__icon--images">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                    </div>
+                    <div class="overview-stats-card__text">
+                        <span class="overview-stats-card__label">IMAGES</span>
+                        <span class="overview-stats-card__value" id="overviewImages">—</span>
+                    </div>
+                    <span class="overview-stats-card__sub" id="overviewImagesSub">— Alt Miss</span>
+                </div>
+                <div class="overview-stats-card">
+                    <div class="overview-stats-card__icon overview-stats-card__icon--links">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                    </div>
+                    <div class="overview-stats-card__text">
+                        <span class="overview-stats-card__label">LINKS</span>
+                        <span class="overview-stats-card__value" id="overviewLinks">—</span>
+                    </div>
+                    <span class="overview-stats-card__sub" id="overviewLinksSub">— External</span>
+                </div>
+            </div>
+
+            <!-- Quick Links (robots.txt & sitemap.xml) -->
+            <div class="quick-links-row">
+                <a class="quick-link" id="robotsTxtLink" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span>robots.txt</span>
+                    <svg class="quick-link__arrow" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </a>
+                <a class="quick-link" id="sitemapLink" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6" />
+                        <line x1="8" y1="12" x2="21" y2="12" />
+                        <line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                    </svg>
+                    <span>sitemap.xml</span>
+                    <svg class="quick-link__arrow" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- SEO Score Card -->
+            <div class="seo-score-card" id="seoScoreCard">
+                <div class="seo-score-badge" id="seoScoreBadge">
+                    <svg class="seo-score-badge__hex" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 3D Shadow layer (offset darker) -->
+                        <polygon class="seo-score-badge__shadow" points="60 8, 106 30, 106 82, 60 104, 14 82, 14 30"
+                            transform="translate(2, 4)" />
+                        <!-- Main face -->
+                        <polygon class="seo-score-badge__bg" points="60 8, 106 30, 106 82, 60 104, 14 82, 14 30" />
+                        <!-- Top highlight (glossy 3D shine) -->
+                        <polygon class="seo-score-badge__highlight"
+                            points="60 8, 106 30, 106 56, 60 56, 14 56, 14 30" />
+                    </svg>
+                    <span class="seo-score-badge__number" id="seoScoreNumber">—</span>
+                </div>
+                <div class="seo-score-info">
+                    <div class="seo-score-info__top">
+                        <span class="seo-score-info__title">SEO SCORE</span>
+                        <span class="seo-score-info__badge" id="seoScoreLabel">—</span>
+                    </div>
+                    <p class="seo-score-info__desc" id="seoScoreDesc">Analyzing page SEO…</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- HEADINGS TAB -->
+        <section class="tab-panel" id="panel-headings">
+
+            <!-- Structure Status Card -->
+            <div class="status-card" id="statusCard">
+                <div class="status-card__header">
+                    <span class="status-card__icon" id="statusIcon"></span>
+                    <span class="status-card__title">STRUCTURE STATUS</span>
+                    <span class="status-card__badge" id="statusBadge">—</span>
+                </div>
+                <div class="status-card__info">
+                    <span class="status-card__info-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </span>
+                    <span class="status-card__info-text" id="statusMessage">Analyzing…</span>
+                </div>
+            </div>
+
+            <!-- Counters Row -->
+            <div class="counters-row" id="countersRow">
+                <div class="counter-item">
+                    <span class="counter-item__label">H1</span>
+                    <span class="counter-item__value" id="countH1">-</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-item__label">H2</span>
+                    <span class="counter-item__value" id="countH2">-</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-item__label">H3</span>
+                    <span class="counter-item__value" id="countH3">-</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-item__label">OTHER</span>
+                    <span class="counter-item__value" id="countOther">-</span>
+                </div>
+            </div>
+
+            <!-- Heading Tree -->
+            <div class="heading-tree-card">
+                <div class="heading-tree-card__header">
+                    <span class="heading-tree-card__title">Heading Tree</span>
+                    <button class="heading-tree-card__copy" id="copyTreeBtn" title="Copy heading tree">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="heading-tree-card__body" id="headingTreeBody">
+                    <p class="heading-tree-card__empty">No headings found.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PLACEHOLDER PANELS -->
+        <section class="tab-panel" id="panel-images">
+            <div class="placeholder-panel">
+                <p>Images tab — coming soon.</p>
+            </div>
+        </section>
+        <section class="tab-panel" id="panel-links">
+            <div class="placeholder-panel">
+                <p>Links tab — coming soon.</p>
+            </div>
+        </section>
+        <section class="tab-panel" id="panel-schema">
+            <div class="placeholder-panel">
+                <p>Schema tab — coming soon.</p>
+            </div>
+        </section>
+        <section class="tab-panel" id="panel-render">
+            <div class="placeholder-panel">
+                <p>Render tab — coming soon.</p>
+            </div>
+        </section>
+        <section class="tab-panel" id="panel-settings">
+            <div class="placeholder-panel">
+                <p>Settings — coming soon.</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="ext-footer">
+            Developed by <a href="#" class="ext-footer__link">Tech Zeros</a>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
