@@ -53,6 +53,14 @@
                             </svg>
                         </span>
                         <span class="meta-row__label">TITLE</span>
+                        <div class="tooltip-wrapper" data-tooltip="The HTML title tag shown in search engine results.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
                     </div>
                     <span class="meta-pill meta-pill--blue" id="titleChars">— chars</span>
                 </div>
@@ -74,6 +82,15 @@
                             </svg>
                         </span>
                         <span class="meta-row__label">DESCRIPTION</span>
+                        <div class="tooltip-wrapper"
+                            data-tooltip="The HTML meta description summarizing the page content.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
                     </div>
                     <span class="meta-pill meta-pill--green" id="descChars">— chars</span>
                 </div>
@@ -92,6 +109,14 @@
                             </svg>
                         </span>
                         <span class="meta-row__label">URL</span>
+                        <div class="tooltip-wrapper" data-tooltip="The current page address and protocol.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
                     </div>
                     <span class="meta-pill meta-pill--blue-solid" id="urlProtocol">—</span>
                 </div>
@@ -112,6 +137,15 @@
                             </svg>
                         </span>
                         <span class="meta-row__label">CANONICAL</span>
+                        <div class="tooltip-wrapper"
+                            data-tooltip="Tells search engines the preferred version of a webpage to avoid duplicate content issues.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
                     </div>
                     <span class="meta-pill meta-pill--green-outline" id="canonicalStatus">—</span>
                 </div>
@@ -123,7 +157,18 @@
             <div class="robots-row">
                 <div class="robots-row__item">
                     <div class="robots-row__header">
-                        <span class="robots-row__label">ROBOTS TAG</span>
+                        <div class="overview-grid__label-row">
+                            <span class="robots-row__label">ROBOTS TAG</span>
+                            <div class="tooltip-wrapper"
+                                data-tooltip="Directives in the HTML meta tag controlling search engine crawling and indexing.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
+                        </div>
                         <span class="robots-row__status" id="robotsTagStatus">
                             <!-- icon filled dynamically -->
                         </span>
@@ -132,7 +177,18 @@
                 </div>
                 <div class="robots-row__item">
                     <div class="robots-row__header">
-                        <span class="robots-row__label">X-ROBOTS-TAG</span>
+                        <div class="overview-grid__label-row">
+                            <span class="robots-row__label">X-ROBOTS-TAG</span>
+                            <div class="tooltip-wrapper"
+                                data-tooltip="HTTP header directives controlling search engine crawling and indexing.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
+                        </div>
                         <span class="robots-row__status" id="xRobotsTagStatus">
                             <!-- icon filled dynamically -->
                         </span>
@@ -153,12 +209,15 @@
                     <div class="overview-grid__text">
                         <div class="overview-grid__label-row">
                             <span class="overview-grid__label">Keywords</span>
-                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
+                            <div class="tooltip-wrapper"
+                                data-tooltip="Meta keywords tag. Mostly deprecated by modern search engines.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
                         </div>
                         <span class="overview-grid__value overview-grid__value--wrap" id="keywordsValue">—</span>
                     </div>
@@ -177,6 +236,15 @@
                     <div class="overview-grid__text">
                         <div class="overview-grid__label-row">
                             <span class="overview-grid__label">Word Count</span>
+                            <div class="tooltip-wrapper"
+                                data-tooltip="Total number of visible words detected on the page.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
                         </div>
                         <span class="overview-grid__value" id="wordCountValue">—</span>
                     </div>
@@ -193,12 +261,15 @@
                     <div class="overview-grid__text">
                         <div class="overview-grid__label-row">
                             <span class="overview-grid__label">Publisher</span>
-                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
+                            <div class="tooltip-wrapper"
+                                data-tooltip="The declared entity that published the page content.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
                         </div>
                         <span class="overview-grid__value" id="publisherValue">—</span>
                     </div>
@@ -216,12 +287,14 @@
                     <div class="overview-grid__text">
                         <div class="overview-grid__label-row">
                             <span class="overview-grid__label">Lang</span>
-                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
+                            <div class="tooltip-wrapper" data-tooltip="The primary language of the HTML document.">
+                                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                    stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
                         </div>
                         <span class="overview-grid__value" id="languageValue">—</span>
                     </div>
@@ -327,6 +400,15 @@
                 <div class="seo-score-info">
                     <div class="seo-score-info__top">
                         <span class="seo-score-info__title">SEO SCORE</span>
+                        <div class="tooltip-wrapper"
+                            data-tooltip="Overall health calculated based on headings, links, images, and meta tags.">
+                            <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
                         <span class="seo-score-info__badge" id="seoScoreLabel">—</span>
                     </div>
                     <p class="seo-score-info__desc" id="seoScoreDesc">Analyzing page SEO…</p>
