@@ -793,14 +793,191 @@
 
         </section>
         <section class="tab-panel" id="panel-render">
-            <div class="placeholder-panel">
-                <p>Render tab — coming soon.</p>
+            <!-- Breakdown Card -->
+            <div class="render-breakdown-card">
+                <h4 class="render-breakdown-card__title">SSR vs CSR Breakdown</h4>
+                <div class="render-status-pill" id="renderStatusPill">
+                    <span class="render-status-pill__icon" id="renderStatusIcon">
+                        <!-- check circle svg -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="16 12 12 8 8 12"></polyline>
+                            <line x1="12" y1="16" x2="12" y2="8"></line>
+                        </svg>
+                    </span>
+                    <span class="render-status-pill__text" id="renderStatusText">Analyzing...</span>
+                </div>
+            </div>
+
+            <!-- Elements Count Cards -->
+            <div class="render-stats-grid">
+                <div class="render-stat-card">
+                    <div class="render-stat-card__label-row">
+                        <span class="render-stat-card__label">SSR ELEMENTS</span>
+                        <div class="tooltip-wrapper"
+                            data-tooltip="Server-Side Rendered elements are present in the initial HTML delivered by the server, making them immediately crawlable by search engines.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="render-stat-card__value" id="ssrCount">—</span>
+                </div>
+                <div class="render-stat-card">
+                    <div class="render-stat-card__label-row">
+                        <span class="render-stat-card__label">CSR ELEMENTS</span>
+                        <div class="tooltip-wrapper"
+                            data-tooltip="Client-Side Rendered elements are injected by JavaScript after page load. Search engines may not index these unless they execute JS.">
+                            <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="render-stat-card__value" id="csrCount">—</span>
+                </div>
+            </div>
+
+            <!-- Visual Mapping Card -->
+            <div class="visual-debugger-card visual-debugger-card--dark">
+                <div class="visual-debugger-card__content visual-debugger-card__content--full">
+                    <h4 class="visual-debugger-card__title fade-text">Visual Render Mapping</h4>
+                    <p class="visual-debugger-card__desc fade-text-sub">Overlay clear identifiers on the page to
+                        distinguish render sources.</p>
+
+                    <button class="btn-highlight btn-highlight--blue-solid mt-2" id="highlightRenderBtn">
+                        <svg class="btn-highlight__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span class="btn-highlight__text">Highlight Render Types</span>
+                    </button>
+
+                    <div class="visual-debugger-card__legend">
+                        <div class="legend-item legend-item--light">
+                            <span class="legend-dot legend-dot--cyan"></span>
+                            <span class="legend-label">SSR</span>
+                        </div>
+                        <div class="legend-item legend-item--light">
+                            <span class="legend-dot legend-dot--purple"></span>
+                            <span class="legend-label">CSR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPA Efficiency Note -->
+            <div class="tip-card tip-card--blue">
+                <span class="tip-card__icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </span>
+                <p class="tip-card__text"><strong>Note:</strong> This tool is highly efficient for analyzing Single Page
+                    Applications (SPAs) to evaluate true search engine crawlability.</p>
             </div>
         </section>
         <section class="tab-panel" id="panel-settings">
-            <div class="placeholder-panel">
-                <p>Settings — coming soon.</p>
+
+            <!-- Settings Header -->
+            <div class="settings-header">
+                <button class="settings-header__back" id="settingsBackBtn" title="Go back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <span class="settings-header__title">Settings</span>
             </div>
+
+            <!-- Settings Content -->
+            <div class="settings-content">
+
+                <!-- UI Preferences Section -->
+                <div class="settings-section">
+                    <div class="settings-section__title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        <span>UI PREFERENCES</span>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card__row">
+                            <div class="settings-card__info">
+                                <span class="settings-card__label">Dark Mode</span>
+                                <span class="settings-card__sublabel">Apply dark theme to extension</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle" />
+                                <span class="toggle-switch__slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div class="settings-section">
+                    <div class="settings-section__title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span>ABOUT</span>
+                    </div>
+
+                    <div class="settings-card settings-card--about">
+                        <div class="settings-about">
+                            <div class="settings-about__logo">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L12 22"></path>
+                                    <path d="M2 12L22 12"></path>
+                                    <path d="M4.93 4.93L19.07 19.07"></path>
+                                    <path d="M19.07 4.93L4.93 19.07"></path>
+                                </svg>
+                            </div>
+                            <div class="settings-about__name">
+                                <span>On-Pager SEO Assistant</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </div>
+                            <span class="settings-about__version">Version 1.2.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Footer -->
+                <div class="settings-footer">
+                    <span class="settings-footer__developed">DEVELOPED BY <strong>Tech Zeros</strong></span>
+                    <div class="settings-footer__links">
+                        <a href="#" class="settings-footer__link">Documentation</a>
+                        <a href="#" class="settings-footer__link">Privacy Policy</a>
+                    </div>
+                </div>
+
+            </div>
+
         </section>
 
         <!-- Footer -->

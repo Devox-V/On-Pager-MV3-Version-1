@@ -519,6 +519,96 @@
         });
     }
 
+    /**
+     * Extracts Render Data comparing initial HTML from network vs current DOM
+     */
+    async function extractRenderData() {
+        try {
+            const response = await fetch(window.location.href);
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const ssrCount = doc.querySelectorAll('body *').length;
+            const totalCount = document.querySelectorAll('body *').length;
+
+            const csrCount = Math.max(0, totalCount - ssrCount);
+            // If CSR elements > 20% of the SSR elements, we consider the page heavily CSR dominant
+            const isCSR = csrCount > (ssrCount * 0.2);
+
+            return {
+                ssrCount,
+                csrCount,
+                isCSR
+            };
+        } catch (e) {
+            console.error('Error extracting render data:', e);
+            return { ssrCount: 0, csrCount: 0, isCSR: false, error: true };
+        }
+    }
+
+    /**
+     * Toggles CSS border overlays for SSR vs CSR elements.
+     */
+    function toggleRenderHighlight(enable) {
+        const styleId = 'onpager-render-highlight-style';
+        let styleEl = document.getElementById(styleId);
+
+        if (!enable) {
+            if (styleEl) styleEl.remove();
+            document.querySelectorAll('.onpager-render-ssr, .onpager-render-csr').forEach(el => {
+                el.classList.remove('onpager-render-ssr', 'onpager-render-csr');
+            });
+            return;
+        }
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = styleId;
+            styleEl.textContent = `
+                .onpager-render-ssr { outline: 2px solid #06B6D4 !important; outline-offset: -2px; }
+                .onpager-render-csr { outline: 2px solid #D946EF !important; outline-offset: -2px; }
+            `;
+            document.head.appendChild(styleEl);
+        }
+
+        fetch(window.location.href).then(res => res.text()).then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            const ssrIds = new Set();
+            const ssrClasses = new Set();
+            doc.querySelectorAll('body *').forEach(el => {
+                if (el.id) ssrIds.add(el.id);
+                if (el.className && typeof el.className === 'string') {
+                    el.className.split(' ').forEach(c => { if (c) ssrClasses.add(c); });
+                }
+            });
+
+            document.querySelectorAll('body *').forEach(el => {
+                if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK', 'META'].includes(el.tagName)) return;
+
+                let looksLikeSSR = false;
+                if (el.id && ssrIds.has(el.id)) {
+                    looksLikeSSR = true;
+                } else if (el.className && typeof el.className === 'string') {
+                    const classes = el.className.split(' ').filter(c => c && !c.startsWith('onpager-'));
+                    if (classes.length > 0 && classes.some(c => ssrClasses.has(c))) {
+                        looksLikeSSR = true;
+                    }
+                } else if (el.parentElement && el.parentElement.classList.contains('onpager-render-ssr')) {
+                    looksLikeSSR = true;
+                }
+
+                if (looksLikeSSR) {
+                    el.classList.add('onpager-render-ssr');
+                } else {
+                    el.classList.add('onpager-render-csr');
+                }
+            });
+        }).catch(err => console.error(err));
+    }
+
     // Listen for messages from the popup
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         if (request.action === 'getHeadings') {
@@ -538,6 +628,12 @@
                 schema: extractSchemaData(),
                 hreflang: extractHreflangData()
             });
+        } else if (request.action === 'getRenderData') {
+            extractRenderData().then(sendResponse);
+            return true; // Keep message channel open for async response
+        } else if (request.action === 'toggleRenderHighlight') {
+            toggleRenderHighlight(request.enable);
+            sendResponse({ success: true });
         }
     });
 })();

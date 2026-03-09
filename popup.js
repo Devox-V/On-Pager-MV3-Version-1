@@ -6,11 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const panels = document.querySelectorAll('.tab-panel');
     const tabBtns = document.querySelectorAll('.tab-btn');
 
+    window._previousTab = 'overview';
+    const extFooter = document.querySelector('.ext-footer');
+
     tabBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.tab-btn');
         if (!btn) return;
 
         const tabName = btn.dataset.tab;
+
+        // Remember the previous non-settings tab
+        const currentActive = document.querySelector('.tab-btn.active');
+        if (currentActive && currentActive.dataset.tab !== 'settings') {
+            window._previousTab = currentActive.dataset.tab;
+        }
 
         tabBtns.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
@@ -21,6 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.classList.add('active');
             }
         });
+
+        // Hide tab bar & footer when Settings is open
+        if (tabName === 'settings') {
+            tabBar.classList.add('hidden-for-settings');
+            if (extFooter) extFooter.classList.add('hidden-for-settings');
+        } else {
+            tabBar.classList.remove('hidden-for-settings');
+            if (extFooter) extFooter.classList.remove('hidden-for-settings');
+        }
     });
 
     // ═══════════════ INIT TABS ═══════════════
@@ -28,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeadingsTab();
     initLinksTab();
     initSchemaTab();
+    initRenderTab();
+    initSettingsTab();
 
     // ═══════════════ SCHEMA SUB-TAB SWITCHING ═══════════════
     const schemaSubtabs = document.querySelectorAll('.schema-subtab');
@@ -102,6 +122,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // ═══════════════ HIGHLIGHT RENDER BUTTON ═══════════════
+    const highlightRenderBtn = document.getElementById('highlightRenderBtn');
+    if (highlightRenderBtn) {
+        let isRenderHighlighted = false;
+        highlightRenderBtn.addEventListener('click', async () => {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab) return;
+            isRenderHighlighted = !isRenderHighlighted;
+
+            chrome.tabs.sendMessage(tab.id, { action: 'toggleRenderHighlight', enable: isRenderHighlighted }, () => {
+                const btnText = highlightRenderBtn.querySelector('.btn-highlight__text');
+                const btnIcon = highlightRenderBtn.querySelector('.btn-highlight__icon');
+
+                if (isRenderHighlighted) {
+                    highlightRenderBtn.classList.add('is-active');
+                    highlightRenderBtn.classList.remove('btn-highlight--blue-solid');
+                    btnText.textContent = 'Remove Overlay';
+                    btnIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>`;
+                } else {
+                    highlightRenderBtn.classList.remove('is-active');
+                    highlightRenderBtn.classList.add('btn-highlight--blue-solid');
+                    btnText.textContent = 'Highlight Render Types';
+                    btnIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>`;
+                }
+            });
+        });
+    }
 });
 
 
@@ -130,8 +180,13 @@ async function initOverviewTab() {
                 setOverviewError();
                 return;
             }
-            renderOverviewTab(response);
-            fetchXRobotsTag(response.currentUrl);
+            chrome.tabs.sendMessage(tab.id, { action: 'getRenderData' }, (renderData) => {
+                if (!chrome.runtime.lastError && renderData) {
+                    response.renderData = renderData;
+                }
+                renderOverviewTab(response);
+                fetchXRobotsTag(response.currentUrl);
+            });
         });
     } catch (err) {
         console.error('initOverviewTab error:', err);
@@ -348,24 +403,22 @@ function renderImagesTab(data) {
 function calculateSEOScore(data) {
     let score = 0;
 
-    // --- OVERVIEW (20 pts) ---
-    // Title (6 pts)
+    // --- OVERVIEW (15 pts) ---
+    // Title (4 pts)
     if (data.titleLength > 0) {
-        score += 2;
         if (data.titleLength >= 30 && data.titleLength <= 60) score += 4;
-        else if (data.titleLength <= 70) score += 2;
+        else score += 2;
     }
-    // Description (6 pts)
+    // Description (3 pts)
     if (data.descLength > 0) {
-        score += 2;
-        if (data.descLength >= 120 && data.descLength <= 160) score += 4;
-        else if (data.descLength >= 50) score += 2;
+        if (data.descLength >= 120 && data.descLength <= 160) score += 3;
+        else score += 1;
     }
-    // HTTPS (3 pts)
-    if (data.protocol === 'HTTPS') score += 3;
+    // HTTPS (2 pts)
+    if (data.protocol === 'HTTPS') score += 2;
 
-    // Canonical (3 pts)
-    if (data.canonicalStatus === 'Indexable') score += 3;
+    // Canonical (4 pts)
+    if (data.canonicalStatus === 'Indexable') score += 4;
     else if (data.canonicalStatus === 'Mismatch') score += 1;
 
     // Robots tag (2 pts)
@@ -373,18 +426,16 @@ function calculateSEOScore(data) {
         const lower = data.robotsTag.toLowerCase();
         if (!lower.includes('noindex') && !lower.includes('none')) score += 2;
     } else {
-        score += 2; // Default is index,follow
+        score += 2;
     }
 
-    // --- HEADINGS (25 pts) ---
+    // --- HEADINGS (20 pts) ---
     if (data.totalHeadings > 0) {
-        // H1 Logic (10 pts)
-        if (data.headingBreakdown && data.headingBreakdown.H1 === 1) score += 10;
-        else if (data.headingBreakdown && data.headingBreakdown.H1 > 1) score += 5;
+        if (data.headingBreakdown && data.headingBreakdown.H1 === 1) score += 8;
+        else if (data.headingBreakdown && data.headingBreakdown.H1 > 1) score += 4;
 
-        // Structure (15 pts) - Use presence of sequential headings as approximate
-        if (data.headingBreakdown && data.headingBreakdown.H2 > 0) score += 15;
-        else score += 10;
+        if (data.headingBreakdown && data.headingBreakdown.H2 > 0) score += 12;
+        else score += 6;
     }
 
     // --- IMAGES (15 pts) ---
@@ -392,48 +443,47 @@ function calculateSEOScore(data) {
         const altRatio = (data.withAlt || (data.totalImages - data.missingAlt)) / data.totalImages;
         score += Math.round(altRatio * 15);
     } else {
-        score += 15; // No images to penalize
+        score += 15;
     }
 
-    // --- LINKS (20 pts) ---
+    // --- LINKS (15 pts) ---
     if (data.linksData) {
         if (data.linksData.total === 0) {
-            score += 20; // No links to penalize
+            score += 15;
         } else {
-            // Anchor Text (10 pts)
-            if (data.linksData.isNatural) score += 10;
-            else if (data.linksData.genericAnchors / data.linksData.total < 0.5) score += 5;
+            if (data.linksData.isNatural) score += 8;
+            else if (data.linksData.genericAnchors / data.linksData.total < 0.5) score += 4;
 
-            // Link diversity/Internal routing (10 pts)
-            if (data.linksData.internal > 0) score += 10;
-            else if (data.linksData.external > 0) score += 5;
+            if (data.linksData.internal > 0) score += 7;
+            else if (data.linksData.external > 0) score += 3;
         }
     }
 
-    // --- SCHEMA (20 pts) ---
+    // --- SCHEMA (15 pts) ---
     if (data.schemaData) {
         const sd = data.schemaData;
         if (sd.total === 0) {
-            // No schema at all → 0 pts for schema
             score += 0;
         } else {
-            // Has valid schema detected (8 pts)
             if (sd.hasValidSchema) score += 8;
+            if (sd.hasJsonLd) score += 3;
+            else if (sd.hasMicrodata) score += 1;
 
-            // Uses JSON-LD (preferred by Google) (6 pts)
-            if (sd.hasJsonLd) score += 6;
-            else if (sd.hasMicrodata) score += 3; // Microdata is acceptable but not ideal
-
-            // All schemas valid with no warnings (6 pts)
-            if (sd.allValid) score += 6;
+            if (sd.allValid) score += 4;
             else {
-                // Partial credit: has some valid schemas
                 const validCount = sd.schemas.filter(s => s.valid && s.warnings === 0).length;
-                if (validCount > 0) score += 3;
+                if (validCount > 0) score += 2;
             }
         }
     }
-    // If schemaData is missing (shouldn't happen), don't add points
+
+    // --- RENDER (20 pts) ---
+    if (data.renderData) {
+        if (!data.renderData.isCSR) score += 20;
+        else score += 10;
+    } else {
+        score += 20;
+    }
 
     return Math.min(score, 100);
 }
@@ -441,7 +491,7 @@ function calculateSEOScore(data) {
 
 /**
  * Renders the SEO score badge with dynamic 3D color.
- * 5-tier system: Perfect (100), Excellent (70-99), Good (40-69), Needs Work (20-39), Critical (0-19)
+ * 5-tier system: Perfect (100), Excellent (80-99), Good (60-79), Needs Work (40-59), Poor (0-39)
  */
 function renderSEOScore(score) {
     const numberEl = document.getElementById('seoScoreNumber');
@@ -457,47 +507,43 @@ function renderSEOScore(score) {
     cardEl.classList.remove('score--perfect', 'score--excellent', 'score--good', 'score--needs', 'score--critical');
     labelEl.classList.remove('badge--perfect', 'badge--excellent', 'badge--good', 'badge--needs', 'badge--critical');
 
-    let classification, issueCount;
+    let classification;
 
-    if (score === 100) {
-        // PERFECT — emerald green
+    if (score >= 90) {
+        // EXCELLENT — green
         classification = 'perfect';
-        labelEl.textContent = 'PERFECT';
+        labelEl.textContent = 'EXCELLENT';
         badgeBg.style.fill = '#059669';
         badgeShadow.style.fill = 'rgba(5, 150, 105, 0.35)';
-        descEl.textContent = 'Your page is perfectly optimized!';
+        descEl.textContent = 'Your page is well optimized.';
     } else if (score >= 70) {
-        // EXCELLENT — amber/gold
+        // GOOD — teal/green
         classification = 'excellent';
-        issueCount = Math.ceil((100 - score) / 5);
-        labelEl.textContent = 'EXCELLENT';
-        badgeBg.style.fill = '#D97706';
-        badgeShadow.style.fill = 'rgba(217, 119, 6, 0.35)';
-        descEl.textContent = `Your page is highly optimized. ${issueCount} minor issues detected.`;
-    } else if (score >= 40) {
-        // GOOD — blue
-        classification = 'good';
-        issueCount = Math.ceil((100 - score) / 5);
         labelEl.textContent = 'GOOD';
+        badgeBg.style.fill = '#0D9488';
+        badgeShadow.style.fill = 'rgba(13, 148, 136, 0.35)';
+        descEl.textContent = 'Your page has a good SEO foundation.';
+    } else if (score >= 50) {
+        // AVERAGE — blue
+        classification = 'good';
+        labelEl.textContent = 'AVERAGE';
         badgeBg.style.fill = '#2563EB';
         badgeShadow.style.fill = 'rgba(37, 99, 235, 0.35)';
-        descEl.textContent = `Good foundation. ${issueCount} improvements recommended.`;
-    } else if (score >= 20) {
-        // NEEDS WORK — dark yellow
+        descEl.textContent = 'Your page needs some improvement.';
+    } else if (score >= 30) {
+        // NEEDS WORK — amber
         classification = 'needs';
-        issueCount = Math.ceil((100 - score) / 5);
         labelEl.textContent = 'NEEDS WORK';
-        badgeBg.style.fill = '#CA8A04';
-        badgeShadow.style.fill = 'rgba(202, 138, 4, 0.35)';
-        descEl.textContent = `Several issues found. ${issueCount} items need attention.`;
+        badgeBg.style.fill = '#D97706';
+        badgeShadow.style.fill = 'rgba(217, 119, 6, 0.35)';
+        descEl.textContent = 'Your page has significant SEO gaps.';
     } else {
-        // CRITICAL — red
+        // POOR — red
         classification = 'critical';
-        issueCount = Math.ceil((100 - score) / 5);
-        labelEl.textContent = 'CRITICAL';
+        labelEl.textContent = 'POOR';
         badgeBg.style.fill = '#DC2626';
         badgeShadow.style.fill = 'rgba(220, 38, 38, 0.35)';
-        descEl.textContent = `Major SEO issues detected. ${issueCount} critical items to fix.`;
+        descEl.textContent = 'Your page has critical SEO issues.';
     }
 
     cardEl.classList.add(`score--${classification}`);
@@ -987,5 +1033,140 @@ function svgWarningSmall(color) {
 }
 
 function svgInfoCircle(color) {
-    return '';
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="16" x2="12" y2="12"></line>
+    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+  </svg>`;
+}
+
+/* ════════════════════════════════════════════════
+   RENDER TAB
+   ════════════════════════════════════════════════ */
+
+async function initRenderTab() {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
+            setRenderError();
+            return;
+        }
+
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js'],
+        });
+
+        chrome.tabs.sendMessage(tab.id, { action: 'getRenderData' }, (response) => {
+            if (chrome.runtime.lastError || !response) {
+                setRenderError();
+                return;
+            }
+            renderRenderTab(response);
+        });
+    } catch (err) {
+        console.error('initRenderTab error:', err);
+        setRenderError();
+    }
+}
+
+function renderRenderTab(data) {
+    const { ssrCount, csrCount, isCSR, error } = data;
+
+    if (error) {
+        setRenderError();
+        return;
+    }
+
+    document.getElementById('ssrCount').textContent = ssrCount;
+    document.getElementById('csrCount').textContent = csrCount;
+
+    const pill = document.getElementById('renderStatusPill');
+    const pillIcon = document.getElementById('renderStatusIcon');
+    const pillText = document.getElementById('renderStatusText');
+
+    pill.className = 'render-status-pill';
+
+    if (isCSR) {
+        pill.classList.add('render-status-pill--csr');
+        pillText.textContent = 'Client-Side Rendering (CSR) detected';
+        pillIcon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`;
+    } else {
+        pillText.textContent = 'Server-Side Rendering detected';
+        pillIcon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line></svg>`;
+    }
+}
+
+function setRenderError() {
+    document.getElementById('ssrCount').textContent = '—';
+    document.getElementById('csrCount').textContent = '—';
+
+    const pill = document.getElementById('renderStatusPill');
+    if (pill) pill.className = 'render-status-pill render-status-pill--neutral';
+
+    const pillText = document.getElementById('renderStatusText');
+    if (pillText) pillText.textContent = 'Cannot analyze render data.';
+}
+
+
+/* ════════════════════════════════════════════════
+   SETTINGS TAB
+   ════════════════════════════════════════════════ */
+
+function initSettingsTab() {
+    const backBtn = document.getElementById('settingsBackBtn');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const tabBar = document.getElementById('tabBar');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    const extFooter = document.querySelector('.ext-footer');
+
+    // ── Back Button ──
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            // Navigate to the previously active tab
+            const targetTab = window._previousTab || 'overview';
+
+            // Try to find the target tab button
+            const allBtns = Array.from(tabBtns);
+            const targetBtn = allBtns.find(b => b.dataset.tab === targetTab) || allBtns.find(b => b.dataset.tab === 'overview');
+
+            // Deactivate all tabs and panels
+            tabBtns.forEach((b) => b.classList.remove('active'));
+            panels.forEach((p) => p.classList.remove('active'));
+
+            // Activate the previous tab
+            if (targetBtn) targetBtn.classList.add('active');
+            const targetPanel = document.getElementById(`panel-${targetTab}`);
+            if (targetPanel) targetPanel.classList.add('active');
+
+            // Show tab bar and footer again
+            tabBar.classList.remove('hidden-for-settings');
+            if (extFooter) extFooter.classList.remove('hidden-for-settings');
+        });
+    }
+
+    // ── Dark Mode Toggle ──
+    if (darkModeToggle) {
+        // Load persisted dark mode preference
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.get(['darkMode'], (result) => {
+                if (result.darkMode) {
+                    document.body.classList.add('dark-theme');
+                    darkModeToggle.checked = true;
+                }
+            });
+        }
+
+        // Toggle dark mode on change
+        darkModeToggle.addEventListener('change', () => {
+            const isDark = darkModeToggle.checked;
+            document.body.classList.toggle('dark-theme', isDark);
+
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.set({ darkMode: isDark });
+            }
+        });
+    }
 }
