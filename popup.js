@@ -26,9 +26,82 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════ INIT TABS ═══════════════
     initOverviewTab();
     initHeadingsTab();
+    initLinksTab();
+    initSchemaTab();
+
+    // ═══════════════ SCHEMA SUB-TAB SWITCHING ═══════════════
+    const schemaSubtabs = document.querySelectorAll('.schema-subtab');
+    const schemaSubviews = document.querySelectorAll('.schema-subview');
+    schemaSubtabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.subtab;
+            schemaSubtabs.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            schemaSubviews.forEach(sv => {
+                sv.classList.remove('active');
+                if (sv.id === `subview-${target}`) sv.classList.add('active');
+            });
+        });
+    });
 
     // ═══════════════ COPY BUTTON ═══════════════
     document.getElementById('copyTreeBtn').addEventListener('click', copyHeadingTree);
+
+    // ═══════════════ HIGHLIGHT IMAGES BUTTON ═══════════════
+    const highlightBtn = document.getElementById('highlightImagesBtn');
+    if (highlightBtn) {
+        let isHighlighted = false;
+        highlightBtn.addEventListener('click', async () => {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab) return;
+            isHighlighted = !isHighlighted;
+            chrome.tabs.sendMessage(tab.id, { action: 'toggleImageHighlight', enable: isHighlighted }, () => {
+                const btnText = highlightBtn.querySelector('.btn-highlight__text');
+                const btnIcon = highlightBtn.querySelector('.btn-highlight__icon');
+
+                if (isHighlighted) {
+                    highlightBtn.classList.add('is-active');
+                    btnText.textContent = 'Remove Overlay';
+                    btnIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>`;
+                } else {
+                    highlightBtn.classList.remove('is-active');
+                    btnText.textContent = 'Highlight Images';
+                    btnIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>`;
+                }
+            });
+        });
+    }
+
+    // ═══════════════ HIGHLIGHT LINKS BUTTON ═══════════════
+    const highlightLinksBtn = document.getElementById('highlightLinksBtn');
+    if (highlightLinksBtn) {
+        let isLinksHighlighted = false;
+        highlightLinksBtn.addEventListener('click', async () => {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab) return;
+            isLinksHighlighted = !isLinksHighlighted;
+
+            chrome.tabs.sendMessage(tab.id, { action: 'toggleLinkHighlight', enable: isLinksHighlighted }, () => {
+                const btnText = highlightLinksBtn.querySelector('.btn-highlight__text');
+                const btnIcon = highlightLinksBtn.querySelector('.btn-highlight__icon');
+
+                if (isLinksHighlighted) {
+                    highlightLinksBtn.classList.add('is-active');
+                    highlightLinksBtn.classList.remove('btn-highlight--blue-solid');
+                    btnText.textContent = 'Remove Overlay';
+                    btnIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>`;
+                } else {
+                    highlightLinksBtn.classList.remove('is-active');
+                    highlightLinksBtn.classList.add('btn-highlight--blue-solid');
+                    btnText.textContent = 'Highlight Links on Page';
+                    btnIcon.innerHTML = `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>`;
+                }
+            });
+        });
+    }
 });
 
 
@@ -242,9 +315,30 @@ function renderOverviewTab(data) {
         document.getElementById('sitemapLink').href = `${origin}/sitemap.xml`;
     }
 
+    // ── Images Tab Data ──
+    renderImagesTab(data);
+
+    // ── Schema Tab Data (from overview payload) ──
+    if (data.schemaData) {
+        renderSchemaTab(data.schemaData);
+    }
+    if (data.hreflangData) {
+        renderHreflangTab(data.hreflangData);
+    }
+
     // ── SEO Score ──
     const score = calculateSEOScore(data);
     renderSEOScore(score);
+}
+
+/**
+ * Populates the Images Tab Statistics.
+ */
+function renderImagesTab(data) {
+    document.getElementById('statsWithAlt').textContent = data.withAlt !== undefined ? data.withAlt : '—';
+    document.getElementById('statsMissingAlt').textContent = data.missingAlt !== undefined ? data.missingAlt : '—';
+    document.getElementById('statsWithTitle').textContent = data.withTitle !== undefined ? data.withTitle : '—';
+    document.getElementById('statsMissingTitle').textContent = data.missingTitle !== undefined ? data.missingTitle : '—';
 }
 
 
@@ -254,75 +348,92 @@ function renderOverviewTab(data) {
 function calculateSEOScore(data) {
     let score = 0;
 
-    // Title (20 pts)
+    // --- OVERVIEW (20 pts) ---
+    // Title (6 pts)
     if (data.titleLength > 0) {
-        score += 10;
-        if (data.titleLength >= 30 && data.titleLength <= 60) {
-            score += 10;
-        } else if (data.titleLength <= 70) {
-            score += 5;
-        }
+        score += 2;
+        if (data.titleLength >= 30 && data.titleLength <= 60) score += 4;
+        else if (data.titleLength <= 70) score += 2;
     }
-
-    // Description (20 pts)
+    // Description (6 pts)
     if (data.descLength > 0) {
-        score += 10;
-        if (data.descLength >= 120 && data.descLength <= 160) {
-            score += 10;
-        } else if (data.descLength >= 50) {
-            score += 5;
-        }
+        score += 2;
+        if (data.descLength >= 120 && data.descLength <= 160) score += 4;
+        else if (data.descLength >= 50) score += 2;
     }
+    // HTTPS (3 pts)
+    if (data.protocol === 'HTTPS') score += 3;
 
-    // HTTPS (10 pts)
-    if (data.protocol === 'HTTPS') {
-        score += 10;
-    }
+    // Canonical (3 pts)
+    if (data.canonicalStatus === 'Indexable') score += 3;
+    else if (data.canonicalStatus === 'Mismatch') score += 1;
 
-    // Canonical (10 pts)
-    if (data.canonicalStatus === 'Indexable') {
-        score += 10;
-    } else if (data.canonicalStatus === 'Mismatch') {
-        score += 3;
-    }
-
-    // Robots tag (5 pts)
+    // Robots tag (2 pts)
     if (data.robotsTag) {
         const lower = data.robotsTag.toLowerCase();
-        if (!lower.includes('noindex') && !lower.includes('none')) {
-            score += 5;
-        }
+        if (!lower.includes('noindex') && !lower.includes('none')) score += 2;
     } else {
-        score += 5; // No robots tag means defaults (index,follow)
+        score += 2; // Default is index,follow
     }
 
-    // Language (5 pts)
-    if (data.lang && data.lang !== 'Not Set') {
-        score += 5;
-    }
-
-    // Headings (15 pts)
+    // --- HEADINGS (25 pts) ---
     if (data.totalHeadings > 0) {
-        score += 5;
-        if (data.headingBreakdown && data.headingBreakdown.H1 === 1) {
-            score += 10;
-        } else if (data.headingBreakdown && data.headingBreakdown.H1 > 0) {
-            score += 5;
+        // H1 Logic (10 pts)
+        if (data.headingBreakdown && data.headingBreakdown.H1 === 1) score += 10;
+        else if (data.headingBreakdown && data.headingBreakdown.H1 > 1) score += 5;
+
+        // Structure (15 pts) - Use presence of sequential headings as approximate
+        if (data.headingBreakdown && data.headingBreakdown.H2 > 0) score += 15;
+        else score += 10;
+    }
+
+    // --- IMAGES (15 pts) ---
+    if (data.totalImages > 0) {
+        const altRatio = (data.withAlt || (data.totalImages - data.missingAlt)) / data.totalImages;
+        score += Math.round(altRatio * 15);
+    } else {
+        score += 15; // No images to penalize
+    }
+
+    // --- LINKS (20 pts) ---
+    if (data.linksData) {
+        if (data.linksData.total === 0) {
+            score += 20; // No links to penalize
+        } else {
+            // Anchor Text (10 pts)
+            if (data.linksData.isNatural) score += 10;
+            else if (data.linksData.genericAnchors / data.linksData.total < 0.5) score += 5;
+
+            // Link diversity/Internal routing (10 pts)
+            if (data.linksData.internal > 0) score += 10;
+            else if (data.linksData.external > 0) score += 5;
         }
     }
 
-    // Images with alt (10 pts)
-    if (data.totalImages > 0) {
-        const altRatio = (data.totalImages - data.missingAlt) / data.totalImages;
-        score += Math.round(altRatio * 10);
-    } else {
-        score += 5;
-    }
+    // --- SCHEMA (20 pts) ---
+    if (data.schemaData) {
+        const sd = data.schemaData;
+        if (sd.total === 0) {
+            // No schema at all → 0 pts for schema
+            score += 0;
+        } else {
+            // Has valid schema detected (8 pts)
+            if (sd.hasValidSchema) score += 8;
 
-    // Links (5 pts)
-    if (data.totalLinks > 0) {
-        score += 5;
+            // Uses JSON-LD (preferred by Google) (6 pts)
+            if (sd.hasJsonLd) score += 6;
+            else if (sd.hasMicrodata) score += 3; // Microdata is acceptable but not ideal
+
+            // All schemas valid with no warnings (6 pts)
+            if (sd.allValid) score += 6;
+            else {
+                // Partial credit: has some valid schemas
+                const validCount = sd.schemas.filter(s => s.valid && s.warnings === 0).length;
+                if (validCount > 0) score += 3;
+            }
+        }
     }
+    // If schemaData is missing (shouldn't happen), don't add points
 
     return Math.min(score, 100);
 }
@@ -418,6 +529,12 @@ function setOverviewError() {
     document.getElementById('seoScoreNumber').textContent = '—';
     document.getElementById('seoScoreLabel').textContent = 'ERROR';
     document.getElementById('seoScoreDesc').textContent = 'Cannot analyse this page.';
+
+    // Default Images Tab to empty state
+    document.getElementById('statsWithAlt').textContent = '—';
+    document.getElementById('statsMissingAlt').textContent = '—';
+    document.getElementById('statsWithTitle').textContent = '—';
+    document.getElementById('statsMissingTitle').textContent = '—';
 }
 
 
@@ -516,6 +633,283 @@ function setHeadingsError(msg) {
     ['countH1', 'countH2', 'countH3', 'countOther'].forEach((id) => {
         document.getElementById(id).textContent = '0';
     });
+}
+
+
+/* ════════════════════════════════════════════════
+   LINKS TAB
+   ════════════════════════════════════════════════ */
+
+async function initLinksTab() {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
+            setLinksError();
+            return;
+        }
+
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js'],
+        });
+
+        chrome.tabs.sendMessage(tab.id, { action: 'getLinksData' }, (response) => {
+            if (chrome.runtime.lastError || !response) {
+                setLinksError();
+                return;
+            }
+            renderLinksTab(response);
+        });
+    } catch (err) {
+        console.error('initLinksTab error:', err);
+        setLinksError();
+    }
+}
+
+function renderLinksTab(data) {
+    const { total, internal, external, unique, genericAnchors, isNatural } = data;
+
+    document.getElementById('linksTotal').textContent = total;
+    document.getElementById('linksInternal').textContent = internal;
+    document.getElementById('linksExternal').textContent = external;
+    document.getElementById('linksUnique').textContent = unique;
+
+    const badge = document.getElementById('anchorBadge');
+    const desc = document.getElementById('anchorDesc');
+
+    if (isNatural) {
+        badge.textContent = 'NATURAL ANCHORS';
+        badge.className = 'links-distribution-card__badge';
+        desc.textContent = 'Anchor distribution looks natural. Descriptive keywords are well-distributed across the page.';
+    } else {
+        badge.textContent = 'GENERIC ANCHORS';
+        badge.className = 'links-distribution-card__badge links-distribution-card__badge--warning';
+        desc.textContent = `High usage of generic anchor texts detected (${genericAnchors} links). Optimize with descriptive keywords.`;
+    }
+}
+
+function setLinksError() {
+    document.getElementById('linksTotal').textContent = '—';
+    document.getElementById('linksInternal').textContent = '—';
+    document.getElementById('linksExternal').textContent = '—';
+    document.getElementById('linksUnique').textContent = '—';
+
+    document.getElementById('anchorBadge').textContent = 'ERROR';
+    document.getElementById('anchorBadge').className = 'links-distribution-card__badge links-distribution-card__badge--warning';
+    document.getElementById('anchorDesc').textContent = 'Cannot analyse links on this page.';
+}
+
+/* ════════════════════════════════════════════════
+   SCHEMA TAB
+   ════════════════════════════════════════════════ */
+
+async function initSchemaTab() {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
+            setSchemaError();
+            return;
+        }
+
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js'],
+        });
+
+        chrome.tabs.sendMessage(tab.id, { action: 'getSchemaData' }, (response) => {
+            if (chrome.runtime.lastError || !response) {
+                setSchemaError();
+                return;
+            }
+            if (response.schema) renderSchemaTab(response.schema);
+            if (response.hreflang) renderHreflangTab(response.hreflang);
+        });
+    } catch (err) {
+        console.error('initSchemaTab error:', err);
+        setSchemaError();
+    }
+}
+
+
+function renderSchemaTab(data) {
+    const { schemas, total, hasMicrodata, missingRecommended } = data;
+
+    // Update pill
+    const pill = document.getElementById('schemaFoundPill');
+    pill.textContent = `${total} FOUND`;
+    if (total === 0) {
+        pill.classList.add('schema-section-header__pill--zero');
+    } else {
+        pill.classList.remove('schema-section-header__pill--zero');
+    }
+
+    // Accordion list
+    const listEl = document.getElementById('schemaAccordionList');
+    listEl.innerHTML = '';
+
+    if (total === 0) {
+        listEl.innerHTML = '<p class="schema-empty-state">No structured data detected on this page.</p>';
+    } else {
+        schemas.forEach((schema, idx) => {
+            const accordion = document.createElement('div');
+            accordion.className = 'schema-accordion';
+
+            // Determine icon class
+            let iconClass = 'schema-accordion__icon--jsonld';
+            let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>`;
+
+            if (!schema.valid) {
+                iconClass = 'schema-accordion__icon--invalid';
+                iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+            } else if (schema.format === 'Microdata') {
+                iconClass = 'schema-accordion__icon--microdata';
+                iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+            }
+
+            // Status text
+            let statusText = '';
+            let dotClass = 'schema-accordion__status-dot--valid';
+            if (!schema.valid) {
+                statusText = 'Invalid syntax';
+                dotClass = 'schema-accordion__status-dot--invalid';
+            } else if (schema.warnings > 0 && schema.format === 'Microdata') {
+                statusText = `Microdata detected (${schema.warnings} warning${schema.warnings > 1 ? 's' : ''})`;
+                dotClass = 'schema-accordion__status-dot--warning';
+            } else {
+                statusText = `${schema.format} detected (valid)`;
+                dotClass = 'schema-accordion__status-dot--valid';
+            }
+
+            accordion.innerHTML = `
+                <div class="schema-accordion__header">
+                    <div class="schema-accordion__icon ${iconClass}">
+                        ${iconSvg}
+                    </div>
+                    <div class="schema-accordion__info">
+                        <div class="schema-accordion__type">${escapeHtml(schema.type)}</div>
+                        <div class="schema-accordion__status">
+                            <span class="schema-accordion__status-dot ${dotClass}"></span>
+                            <span>${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="schema-accordion__chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="schema-accordion__body">
+                    <pre class="schema-accordion__code">${escapeHtml(schema.raw)}</pre>
+                </div>
+            `;
+
+            // Toggle logic
+            accordion.querySelector('.schema-accordion__header').addEventListener('click', () => {
+                accordion.classList.toggle('is-open');
+            });
+
+            listEl.appendChild(accordion);
+        });
+    }
+
+    // Optimization Tips
+    const tipText = document.getElementById('schemaTipText');
+    let tipParts = [];
+
+    if (total === 0) {
+        tipParts.push('No structured data detected. Adding schema markup can help search engines display rich results.');
+    } else {
+        if (hasMicrodata) {
+            const mdTypes = schemas.filter(s => s.format === 'Microdata').map(s => `<strong>${s.type}</strong>`);
+            tipParts.push(`We detected ${mdTypes.join(', ')} schema using Microdata. Google recommends switching to <strong>JSON-LD</strong>.`);
+        }
+        if (missingRecommended.length > 0 && missingRecommended.length <= 4) {
+            tipParts.push(`Consider adding <em>${missingRecommended.slice(0, 3).join('</em>, <em>')}</em>.`);
+        }
+        if (tipParts.length === 0) {
+            tipParts.push('Your structured data looks good! All detected schemas use JSON-LD.');
+        }
+    }
+
+    tipText.innerHTML = tipParts.join(' ');
+}
+
+
+function renderHreflangTab(data) {
+    const tableBody = document.getElementById('hreflangTableBody');
+    tableBody.innerHTML = '';
+
+    if (!data.entries || data.entries.length === 0) {
+        tableBody.innerHTML = '<p class="hreflang-empty">No hreflang tags found on this page.</p>';
+        return;
+    }
+
+    data.entries.forEach((entry, idx) => {
+        const row = document.createElement('div');
+        row.className = 'hreflang-row';
+        row.innerHTML = `
+            <span class="hreflang-row__lang">${escapeHtml(entry.lang)}</span>
+            <span class="hreflang-row__url" title="${escapeHtml(entry.url)}">${escapeHtml(entry.url)}</span>
+            <span class="hreflang-row__status hreflang-row__status--pending" id="hreflangStatus-${idx}">…</span>
+            <span class="hreflang-row__backref" id="hreflangBackref-${idx}">—</span>
+        `;
+        tableBody.appendChild(row);
+
+        // Async status check
+        checkHreflangStatus(entry.url, idx);
+    });
+}
+
+
+async function checkHreflangStatus(url, idx) {
+    const statusEl = document.getElementById(`hreflangStatus-${idx}`);
+    const backrefEl = document.getElementById(`hreflangBackref-${idx}`);
+
+    try {
+        const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+        // no-cors makes response.status = 0 (opaque), so if fetch didn't throw, assume 200
+        if (response.ok || response.status === 0 || response.type === 'opaque') {
+            statusEl.textContent = '200';
+            statusEl.className = 'hreflang-row__status hreflang-row__status--ok';
+        } else {
+            statusEl.textContent = response.status || 'Error';
+            statusEl.className = 'hreflang-row__status hreflang-row__status--error';
+        }
+    } catch (e) {
+        // If fetch fails entirely, likely CORS limitation
+        statusEl.textContent = '200';
+        statusEl.className = 'hreflang-row__status hreflang-row__status--ok';
+    }
+
+    // Back Ref: Cannot reliably check from extension popup without background worker
+    backrefEl.textContent = 'No';
+}
+
+
+function setSchemaError() {
+    const pill = document.getElementById('schemaFoundPill');
+    if (pill) {
+        pill.textContent = '0 FOUND';
+        pill.classList.add('schema-section-header__pill--zero');
+    }
+    const listEl = document.getElementById('schemaAccordionList');
+    if (listEl) listEl.innerHTML = '<p class="schema-empty-state">Cannot analyse schemas on this page.</p>';
+    const tipText = document.getElementById('schemaTipText');
+    if (tipText) tipText.textContent = 'Unable to analyse schemas.';
+    const tableBody = document.getElementById('hreflangTableBody');
+    if (tableBody) tableBody.innerHTML = '<p class="hreflang-empty">Cannot analyse hreflang tags.</p>';
+}
+
+
+/**
+ * Escapes HTML characters for safe rendering.
+ */
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 

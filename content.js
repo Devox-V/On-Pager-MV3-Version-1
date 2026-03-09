@@ -179,27 +179,32 @@
         const allImages = document.querySelectorAll('img');
         const totalImages = allImages.length;
         let missingAlt = 0;
+        let withAlt = 0;
+        let withTitle = 0;
+        let missingTitle = 0;
+
         allImages.forEach(img => {
             if (!img.getAttribute('alt') || img.getAttribute('alt').trim() === '') {
                 missingAlt++;
+            } else {
+                withAlt++;
+            }
+            if (!img.getAttribute('title') || img.getAttribute('title').trim() === '') {
+                missingTitle++;
+            } else {
+                withTitle++;
             }
         });
 
-        // Links
-        const allLinks = document.querySelectorAll('a[href]');
-        const totalLinks = allLinks.length;
-        let externalLinks = 0;
-        const currentHost = window.location.hostname;
-        allLinks.forEach(a => {
-            try {
-                const linkUrl = new URL(a.href, window.location.origin);
-                if (linkUrl.hostname !== currentHost) {
-                    externalLinks++;
-                }
-            } catch (e) {
-                // ignore malformed URLs
-            }
-        });
+        // Links (Detailed)
+        const linksData = extractLinksData();
+        // Derive simple counts from the detailed data for the overview stats cards
+        const totalLinks = linksData.total;
+        const externalLinks = linksData.external;
+
+        // Schema & Hreflang
+        const schemaData = extractSchemaData();
+        const hreflangData = extractHreflangData();
 
         // Base URL for robots.txt and sitemap.xml
         const origin = window.location.origin;
@@ -224,10 +229,294 @@
             headingBreakdown,
             totalImages,
             missingAlt,
+            withAlt,
+            missingTitle,
+            withTitle,
             totalLinks,
             externalLinks,
+            linksData,
+            schemaData,
+            hreflangData,
             origin,
         };
+    }
+
+    /**
+     * Toggles CSS border overlays for images on the page.
+     */
+    function toggleImageHighlight(enable) {
+        const styleId = 'onpager-img-highlight-style';
+        let styleEl = document.getElementById(styleId);
+
+        if (!enable) {
+            if (styleEl) styleEl.remove();
+            document.querySelectorAll('.onpager-img-valid, .onpager-img-invalid').forEach(img => {
+                img.classList.remove('onpager-img-valid', 'onpager-img-invalid');
+            });
+            document.querySelectorAll('.onpager-img-label').forEach(lbl => lbl.remove());
+            return;
+        }
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = styleId;
+            styleEl.textContent = `
+                .onpager-img-valid { outline: 3px solid #22C55E !important; outline-offset: -3px; }
+                .onpager-img-invalid { outline: 3px solid #EF4444 !important; outline-offset: -3px; }
+                .onpager-img-label {
+                    position: absolute !important;
+                    background: #EF4444 !important;
+                    color: white !important;
+                    font-size: 11px !important;
+                    font-family: sans-serif !important;
+                    font-weight: bold !important;
+                    padding: 2px 6px !important;
+                    border-radius: 4px !important;
+                    z-index: 2147483647 !important;
+                    pointer-events: none !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+                }
+            `;
+            document.head.appendChild(styleEl);
+        }
+
+        document.querySelectorAll('img').forEach(img => {
+            const hasAlt = img.getAttribute('alt') && img.getAttribute('alt').trim() !== '';
+
+            // Skip hidden images to avoid weird labels
+            const rect = img.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            if (hasAlt) {
+                img.classList.add('onpager-img-valid');
+            } else {
+                img.classList.add('onpager-img-invalid');
+
+                // Add "Missing Alt" label overlay
+                const label = document.createElement('div');
+                label.className = 'onpager-img-label';
+                label.textContent = 'Missing Alt';
+                label.style.top = (window.scrollY + rect.top + 4) + 'px';
+                label.style.left = (window.scrollX + rect.left + 4) + 'px';
+                document.body.appendChild(label);
+            }
+        });
+    }
+
+    /**
+     * Extracts deep links data for the Links tab
+     */
+    function extractLinksData() {
+        const allLinks = document.querySelectorAll('a[href]');
+        const total = allLinks.length;
+
+        let internal = 0;
+        let external = 0;
+        let genericAnchors = 0;
+        const uniqueUrls = new Set();
+
+        const currentHost = window.location.hostname;
+
+        // List of common generic anchor texts
+        const genericTerms = new Set([
+            'click here', 'read more', 'learn more', 'more', 'here',
+            'link', 'this', 'website', 'page', 'continue', 'details'
+        ]);
+
+        allLinks.forEach(a => {
+            try {
+                const urlObj = new URL(a.href, window.location.origin);
+
+                // Track unique URLs (excluding simple hash links to same page if desired, but let's track pure URLs)
+                // Normalize url slightly by removing trailing slash for uniqueness count
+                uniqueUrls.add(urlObj.href.replace(/\/$/, ''));
+
+                // Internal vs External
+                if (urlObj.hostname === currentHost) {
+                    internal++;
+                } else {
+                    external++;
+                }
+
+                // Check anchor text
+                const text = a.textContent.trim().toLowerCase();
+                if (genericTerms.has(text) || text.length < 3) {
+                    genericAnchors++;
+                }
+
+            } catch (e) {
+                // Ignore malformed URLs
+            }
+        });
+
+        return {
+            total,
+            internal,
+            external,
+            unique: uniqueUrls.size,
+            genericAnchors,
+            // Calculate if the distribution feels "natural" (less than 20% generic)
+            isNatural: total === 0 ? true : (genericAnchors / total) < 0.2
+        };
+    }
+
+    /**
+     * Extracts JSON-LD and Microdata schema data from the page.
+     */
+    function extractSchemaData() {
+        const schemas = [];
+
+        // --- JSON-LD ---
+        const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
+        jsonLdScripts.forEach(script => {
+            const raw = script.textContent.trim();
+            try {
+                const parsed = JSON.parse(raw);
+                // Handle @graph arrays
+                const items = parsed['@graph'] ? parsed['@graph'] : [parsed];
+                items.forEach(item => {
+                    schemas.push({
+                        type: item['@type'] || 'Unknown',
+                        format: 'JSON-LD',
+                        valid: true,
+                        warnings: 0,
+                        raw: JSON.stringify(item, null, 2)
+                    });
+                });
+            } catch (e) {
+                // Invalid JSON-LD
+                schemas.push({
+                    type: 'Invalid JSON-LD',
+                    format: 'JSON-LD',
+                    valid: false,
+                    warnings: 1,
+                    raw: raw
+                });
+            }
+        });
+
+        // --- Microdata ---
+        const microdataEls = document.querySelectorAll('[itemscope][itemtype]');
+        microdataEls.forEach(el => {
+            const itemType = el.getAttribute('itemtype') || '';
+            // Extract type name from URL like "https://schema.org/Product"
+            const typeName = itemType.split('/').pop() || 'Unknown';
+
+            // Gather microdata properties
+            const props = {};
+            const propEls = el.querySelectorAll('[itemprop]');
+            let warningCount = 0;
+            propEls.forEach(p => {
+                const name = p.getAttribute('itemprop');
+                const value = p.getAttribute('content') || p.textContent.trim().substring(0, 100);
+                if (!value) warningCount++;
+                props[name] = value || '(empty)';
+            });
+
+            // Microdata is valid but Google recommends JSON-LD, so always flag warnings
+            warningCount = Math.max(warningCount, 1); // At least 1 warning for using Microdata
+
+            schemas.push({
+                type: typeName,
+                format: 'Microdata',
+                valid: true,
+                warnings: warningCount,
+                raw: JSON.stringify(props, null, 2)
+            });
+        });
+
+        // --- Check for recommended schemas ---
+        const detectedTypes = schemas.map(s => s.type.toLowerCase());
+        const missingRecommended = [];
+        const recommended = ['Organization', 'Breadcrumb', 'BreadcrumbList', 'WebSite', 'WebPage'];
+        recommended.forEach(r => {
+            if (!detectedTypes.includes(r.toLowerCase())) {
+                missingRecommended.push(r);
+            }
+        });
+
+        // Identify if any Microdata schemas exist (for optimization tip)
+        const hasMicrodata = schemas.some(s => s.format === 'Microdata');
+        const hasJsonLd = schemas.some(s => s.format === 'JSON-LD');
+        const hasValidSchema = schemas.some(s => s.valid);
+        const allValid = schemas.length > 0 && schemas.every(s => s.valid && s.warnings === 0);
+
+        return {
+            schemas,
+            total: schemas.length,
+            hasJsonLd,
+            hasMicrodata,
+            hasValidSchema,
+            allValid,
+            missingRecommended
+        };
+    }
+
+    /**
+     * Extracts hreflang alternate link data from the page.
+     */
+    function extractHreflangData() {
+        const hreflangLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
+        const entries = [];
+
+        hreflangLinks.forEach(link => {
+            const lang = link.getAttribute('hreflang') || '';
+            const href = link.getAttribute('href') || '';
+            entries.push({
+                lang,
+                url: href
+            });
+        });
+
+        return {
+            entries,
+            total: entries.length
+        };
+    }
+
+    /**
+     * Toggles CSS border overlays for links on the page.
+     */
+    function toggleLinkHighlight(enable) {
+        const styleId = 'onpager-link-highlight-style';
+        let styleEl = document.getElementById(styleId);
+
+        if (!enable) {
+            if (styleEl) styleEl.remove();
+            document.querySelectorAll('.onpager-link-internal, .onpager-link-external, .onpager-link-nofollow').forEach(a => {
+                a.classList.remove('onpager-link-internal', 'onpager-link-external', 'onpager-link-nofollow');
+            });
+            return;
+        }
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = styleId;
+            styleEl.textContent = `
+                .onpager-link-internal { outline: 2px solid #22C55E !important; outline-offset: 1px; background: rgba(34, 197, 94, 0.1) !important; color: #000 !important; }
+                .onpager-link-external { outline: 2px solid #EF4444 !important; outline-offset: 1px; background: rgba(239, 68, 68, 0.1) !important; color: #000 !important; }
+                .onpager-link-nofollow { outline: 2px solid #94A3B8 !important; outline-offset: 1px; background: rgba(148, 163, 184, 0.1) !important; color: #000 !important; }
+            `;
+            document.head.appendChild(styleEl);
+        }
+
+        const currentHost = window.location.hostname;
+        document.querySelectorAll('a[href]').forEach(a => {
+            const rel = (a.getAttribute('rel') || '').toLowerCase();
+            if (rel.includes('nofollow')) {
+                a.classList.add('onpager-link-nofollow');
+                return;
+            }
+
+            try {
+                const urlObj = new URL(a.href, window.location.origin);
+                if (urlObj.hostname === currentHost) {
+                    a.classList.add('onpager-link-internal');
+                } else {
+                    a.classList.add('onpager-link-external');
+                }
+            } catch (e) { }
+        });
     }
 
     // Listen for messages from the popup
@@ -236,6 +525,19 @@
             sendResponse(extractHeadings());
         } else if (request.action === 'getOverviewData') {
             sendResponse(extractOverviewData());
+        } else if (request.action === 'getLinksData') {
+            sendResponse(extractLinksData());
+        } else if (request.action === 'toggleImageHighlight') {
+            toggleImageHighlight(request.enable);
+            sendResponse({ success: true });
+        } else if (request.action === 'toggleLinkHighlight') {
+            toggleLinkHighlight(request.enable);
+            sendResponse({ success: true });
+        } else if (request.action === 'getSchemaData') {
+            sendResponse({
+                schema: extractSchemaData(),
+                hreflang: extractHreflangData()
+            });
         }
     });
 })();

@@ -479,20 +479,318 @@
         </section>
 
         <!-- PLACEHOLDER PANELS -->
+        <!-- IMAGES TAB -->
         <section class="tab-panel" id="panel-images">
-            <div class="placeholder-panel">
-                <p>Images tab — coming soon.</p>
+            <h3 class="tab-section-title">IMAGE STATISTICS</h3>
+
+            <div class="image-stats-grid">
+                <!-- With Alt -->
+                <div class="image-stat-card image-stat-card--blue">
+                    <div class="image-stat-card__header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <span>WITH ALT</span>
+                    </div>
+                    <div class="image-stat-card__value" id="statsWithAlt">—</div>
+                </div>
+
+                <!-- Missing Alt -->
+                <div class="image-stat-card image-stat-card--red">
+                    <div class="image-stat-card__header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>MISSING ALT</span>
+                    </div>
+                    <div class="image-stat-card__value" id="statsMissingAlt">—</div>
+                </div>
+
+                <!-- With Title -->
+                <div class="image-stat-card image-stat-card--neutral">
+                    <div class="image-stat-card__header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z">
+                            </path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <span>WITH TITLE</span>
+                    </div>
+                    <div class="image-stat-card__value" id="statsWithTitle">—</div>
+                </div>
+
+                <!-- Missing Title -->
+                <div class="image-stat-card image-stat-card--neutral">
+                    <div class="image-stat-card__header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                            </path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                        <span>MISSING TITLE</span>
+                    </div>
+                    <div class="image-stat-card__value" id="statsMissingTitle">—</div>
+                </div>
+            </div>
+
+            <!-- Visual Debugger Card -->
+            <div class="visual-debugger-card">
+                <div class="visual-debugger-card__image-container">
+                    <div class="visual-debugger-card__backdrop">
+                        <button class="btn-highlight" id="highlightImagesBtn">
+                            <svg class="btn-highlight__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span class="btn-highlight__text">Highlight Images</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="visual-debugger-card__content">
+                    <h4 class="visual-debugger-card__title">Visual Debugger</h4>
+                    <p class="visual-debugger-card__desc">Identify missing attributes directly on components.</p>
+                    <div class="visual-debugger-card__legend">
+                        <div class="legend-item">
+                            <span class="legend-dot legend-dot--green"></span>
+                            <span class="legend-label">ALT PRESENT</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot legend-dot--red"></span>
+                            <span class="legend-label">ALT MISSING</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
+        <!-- LINKS TAB -->
         <section class="tab-panel" id="panel-links">
-            <div class="placeholder-panel">
-                <p>Links tab — coming soon.</p>
+
+            <!-- Anchor Text Distribution Card -->
+            <div class="links-distribution-card">
+                <span class="links-distribution-card__badge" id="anchorBadge">NATURAL ANCHORS</span>
+                <h4 class="links-distribution-card__title">Anchor Text Distribution</h4>
+                <p class="links-distribution-card__desc" id="anchorDesc">Analyzing anchor text distribution...</p>
             </div>
+
+            <!-- Optimization Tip Card -->
+            <div class="tip-card tip-card--blue">
+                <span class="tip-card__icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4"></path>
+                        <path d="M12 8h.01"></path>
+                    </svg>
+                </span>
+                <p class="tip-card__text"><strong>Optimization Tip:</strong> Use descriptive anchors for internal links
+                    to boost semantic SEO relevance.</p>
+            </div>
+
+            <!-- Links 2x2 Stats Grid -->
+            <div class="links-stats-grid">
+                <div class="links-stat-box">
+                    <div class="links-stat-box__header">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        <span>TOTAL</span>
+                    </div>
+                    <div class="links-stat-box__value" id="linksTotal">—</div>
+                </div>
+                <div class="links-stat-box">
+                    <div class="links-stat-box__header">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        <span>INTERNAL</span>
+                    </div>
+                    <div class="links-stat-box__value" id="linksInternal">—</div>
+                </div>
+                <div class="links-stat-box">
+                    <div class="links-stat-box__header">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        <span>EXTERNAL</span>
+                    </div>
+                    <div class="links-stat-box__value" id="linksExternal">—</div>
+                </div>
+                <div class="links-stat-box">
+                    <div class="links-stat-box__header">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>UNIQUE</span>
+                    </div>
+                    <div class="links-stat-box__value" id="linksUnique">—</div>
+                </div>
+            </div>
+
+            <!-- Links Visual Inspector Card -->
+            <div class="visual-debugger-card visual-debugger-card--links">
+                <div class="visual-debugger-card__content visual-debugger-card__content--full">
+                    <div class="visual-debugger-card__header">
+                        <svg class="visual-debugger-card__header-icon" width="20" height="20" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <h4 class="visual-debugger-card__title">Visual Inspector</h4>
+                    </div>
+
+                    <p class="visual-debugger-card__desc">Toggle visual highlights for all links on the current page.
+                    </p>
+
+                    <button class="btn-highlight btn-highlight--blue-solid" id="highlightLinksBtn">
+                        <svg class="btn-highlight__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+                            </path>
+                        </svg>
+                        <span class="btn-highlight__text">Highlight Links on Page</span>
+                    </button>
+
+                    <div class="visual-debugger-card__legend visual-debugger-card__legend--3cols">
+                        <div class="legend-item">
+                            <span class="legend-dot legend-dot--green"></span>
+                            <span class="legend-label">INTERNAL</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot legend-dot--red"></span>
+                            <span class="legend-label">EXTERNAL</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot legend-dot--gray"></span>
+                            <span class="legend-label">NO-FOLLOW</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
         <section class="tab-panel" id="panel-schema">
-            <div class="placeholder-panel">
-                <p>Schema tab — coming soon.</p>
+
+            <!-- Schema / Hreflang Sub-tabs -->
+            <div class="schema-subtabs">
+                <button class="schema-subtab active" data-subtab="schema">
+                    <span>Schema</span>
+                    <div class="tooltip-wrapper"
+                        data-tooltip="Structured data markup (JSON-LD or Microdata) that helps search engines understand page content and display rich results.">
+                        <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                </button>
+                <button class="schema-subtab" data-subtab="hreflang">
+                    <span>Hreflang</span>
+                    <div class="tooltip-wrapper"
+                        data-tooltip="HTML link tags that tell search engines which language and regional versions of a page exist, improving international SEO.">
+                        <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                </button>
             </div>
+
+            <!-- ══════ SCHEMA SUB-VIEW ══════ -->
+            <div class="schema-subview active" id="subview-schema">
+
+                <!-- Detected Schema Types Header -->
+                <div class="schema-section-header">
+                    <h3 class="schema-section-header__title">Detected Schema Types</h3>
+                    <span class="schema-section-header__pill" id="schemaFoundPill">0 FOUND</span>
+                </div>
+
+                <!-- Schema Accordion List -->
+                <div class="schema-accordion-list" id="schemaAccordionList">
+                    <p class="schema-empty-state" id="schemaEmptyState">Analyzing schemas…</p>
+                </div>
+
+                <!-- Optimization Tips Card -->
+                <div class="schema-tip-card" id="schemaTipCard">
+                    <span class="schema-tip-card__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                    </span>
+                    <div class="schema-tip-card__body">
+                        <h4 class="schema-tip-card__title">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                            Optimization Tips
+                        </h4>
+                        <p class="schema-tip-card__text" id="schemaTipText">Analyzing page schema…</p>
+                        <a class="schema-tip-card__link"
+                            href="https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data"
+                            target="_blank" rel="noopener noreferrer">
+                            View documentation
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════ HREFLANG SUB-VIEW ══════ -->
+            <div class="schema-subview" id="subview-hreflang">
+
+                <!-- Hreflang Description -->
+                <p class="hreflang-desc">
+                    While not mandatory, implementing Hreflang can improve the accuracy of search engine results
+                    for multilingual websites and enhance the user experience for international audiences.
+                </p>
+
+                <!-- Hreflang Data Table -->
+                <div class="hreflang-table-wrapper">
+                    <div class="hreflang-table-header">
+                        <span class="hreflang-th hreflang-th--lang">Language</span>
+                        <span class="hreflang-th hreflang-th--url">URL</span>
+                        <span class="hreflang-th hreflang-th--status">Status</span>
+                        <span class="hreflang-th hreflang-th--backref">Back Ref</span>
+                    </div>
+                    <div class="hreflang-table-body" id="hreflangTableBody">
+                        <p class="schema-empty-state">Analyzing hreflang tags…</p>
+                    </div>
+                </div>
+            </div>
+
         </section>
         <section class="tab-panel" id="panel-render">
             <div class="placeholder-panel">
