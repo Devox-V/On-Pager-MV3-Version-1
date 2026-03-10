@@ -41,12 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ═══════════════ INIT TABS ═══════════════
-    initOverviewTab();
-    initHeadingsTab();
-    initLinksTab();
-    initSchemaTab();
-    initRenderTab();
+    // ═══════════════ INIT ALL TABS (single injection, parallel fetch) ═══════════════
+    initAllTabs();
     initSettingsTab();
 
     // ═══════════════ SCHEMA SUB-TAB SWITCHING ═══════════════
@@ -156,41 +152,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /* ════════════════════════════════════════════════
-   OVERVIEW TAB
+   FAST INIT — Single injection, parallel data fetch
    ════════════════════════════════════════════════ */
 
-async function initOverviewTab() {
+/**
+ * Helper: send a message to tab and return a promise.
+ * Resolves with the response or null on error/timeout.
+ */
+function sendTabMessage(tabId, message, timeoutMs = 5000) {
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(null), timeoutMs);
+        try {
+            chrome.tabs.sendMessage(tabId, message, (response) => {
+                clearTimeout(timer);
+                if (chrome.runtime.lastError || !response) {
+                    resolve(null);
+                } else {
+                    resolve(response);
+                }
+            });
+        } catch (e) {
+            clearTimeout(timer);
+            resolve(null);
+        }
+    });
+}
+
+async function initAllTabs() {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
         if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
             setOverviewError();
+            setHeadingsError('Cannot analyse this page.');
+            setLinksError();
+            setSchemaError();
+            setRenderError();
             return;
         }
 
-        // Inject content script
+        // Inject content script ONCE
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             files: ['content.js'],
         });
 
-        // Request overview data
-        chrome.tabs.sendMessage(tab.id, { action: 'getOverviewData' }, (response) => {
-            if (chrome.runtime.lastError || !response) {
-                setOverviewError();
-                return;
-            }
-            chrome.tabs.sendMessage(tab.id, { action: 'getRenderData' }, (renderData) => {
-                if (!chrome.runtime.lastError && renderData) {
-                    response.renderData = renderData;
-                }
-                renderOverviewTab(response);
-                fetchXRobotsTag(response.currentUrl);
-            });
-        });
+        // Fire ALL data requests in parallel
+        const [overviewData, headingsData, linksData, schemaData, renderData] = await Promise.all([
+            sendTabMessage(tab.id, { action: 'getOverviewData' }),
+            sendTabMessage(tab.id, { action: 'getHeadings' }),
+            sendTabMessage(tab.id, { action: 'getLinksData' }),
+            sendTabMessage(tab.id, { action: 'getSchemaData' }),
+            sendTabMessage(tab.id, { action: 'getRenderData' }),
+        ]);
+
+        // ── Overview ──
+        if (overviewData) {
+            if (renderData) overviewData.renderData = renderData;
+            if (linksData) overviewData.linksData = linksData;
+            renderOverviewTab(overviewData);
+            fetchXRobotsTag(overviewData.currentUrl);
+        } else {
+            setOverviewError();
+        }
+
+        // ── Headings ──
+        if (headingsData) {
+            renderHeadingsTab(headingsData);
+        } else {
+            setHeadingsError('Could not extract headings from this page.');
+        }
+
+        // ── Links ──
+        if (linksData) {
+            renderLinksTab(linksData);
+        } else {
+            setLinksError();
+        }
+
+        // ── Schema & Hreflang ──
+        if (schemaData) {
+            if (schemaData.schema) renderSchemaTab(schemaData.schema);
+            if (schemaData.hreflang) renderHreflangTab(schemaData.hreflang);
+        } else {
+            setSchemaError();
+        }
+
+        // ── Render ──
+        if (renderData) {
+            renderRenderTab(renderData);
+        } else {
+            setRenderError();
+        }
+
     } catch (err) {
-        console.error('initOverviewTab error:', err);
+        console.error('initAllTabs error:', err);
         setOverviewError();
+        setHeadingsError('An error occurred.');
+        setLinksError();
+        setSchemaError();
+        setRenderError();
     }
 }
 
@@ -390,6 +451,7 @@ function renderOverviewTab(data) {
  * Populates the Images Tab Statistics.
  */
 function renderImagesTab(data) {
+    document.getElementById('statsTotalImages').textContent = data.totalImages !== undefined ? data.totalImages : '—';
     document.getElementById('statsWithAlt').textContent = data.withAlt !== undefined ? data.withAlt : '—';
     document.getElementById('statsMissingAlt').textContent = data.missingAlt !== undefined ? data.missingAlt : '—';
     document.getElementById('statsWithTitle').textContent = data.withTitle !== undefined ? data.withTitle : '—';
@@ -588,33 +650,6 @@ function setOverviewError() {
    HEADINGS TAB
    ════════════════════════════════════════════════ */
 
-async function initHeadingsTab() {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
-            setHeadingsError('Cannot analyse this page.');
-            return;
-        }
-
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js'],
-        });
-
-        chrome.tabs.sendMessage(tab.id, { action: 'getHeadings' }, (response) => {
-            if (chrome.runtime.lastError || !response) {
-                setHeadingsError('Could not extract headings from this page.');
-                return;
-            }
-            renderHeadingsTab(response);
-        });
-    } catch (err) {
-        console.error('initHeadingsTab error:', err);
-        setHeadingsError('An error occurred while analysing headings.');
-    }
-}
-
 
 function renderHeadingsTab(data) {
     const { counts, headings, structureStatus, statusMessage } = data;
@@ -686,33 +721,6 @@ function setHeadingsError(msg) {
    LINKS TAB
    ════════════════════════════════════════════════ */
 
-async function initLinksTab() {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
-            setLinksError();
-            return;
-        }
-
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js'],
-        });
-
-        chrome.tabs.sendMessage(tab.id, { action: 'getLinksData' }, (response) => {
-            if (chrome.runtime.lastError || !response) {
-                setLinksError();
-                return;
-            }
-            renderLinksTab(response);
-        });
-    } catch (err) {
-        console.error('initLinksTab error:', err);
-        setLinksError();
-    }
-}
-
 function renderLinksTab(data) {
     const { total, internal, external, unique, genericAnchors, isNatural } = data;
 
@@ -749,34 +757,6 @@ function setLinksError() {
 /* ════════════════════════════════════════════════
    SCHEMA TAB
    ════════════════════════════════════════════════ */
-
-async function initSchemaTab() {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
-            setSchemaError();
-            return;
-        }
-
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js'],
-        });
-
-        chrome.tabs.sendMessage(tab.id, { action: 'getSchemaData' }, (response) => {
-            if (chrome.runtime.lastError || !response) {
-                setSchemaError();
-                return;
-            }
-            if (response.schema) renderSchemaTab(response.schema);
-            if (response.hreflang) renderHreflangTab(response.hreflang);
-        });
-    } catch (err) {
-        console.error('initSchemaTab error:', err);
-        setSchemaError();
-    }
-}
 
 
 function renderSchemaTab(data) {
@@ -1044,33 +1024,6 @@ function svgInfoCircle(color) {
    RENDER TAB
    ════════════════════════════════════════════════ */
 
-async function initRenderTab() {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
-            setRenderError();
-            return;
-        }
-
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js'],
-        });
-
-        chrome.tabs.sendMessage(tab.id, { action: 'getRenderData' }, (response) => {
-            if (chrome.runtime.lastError || !response) {
-                setRenderError();
-                return;
-            }
-            renderRenderTab(response);
-        });
-    } catch (err) {
-        console.error('initRenderTab error:', err);
-        setRenderError();
-    }
-}
-
 function renderRenderTab(data) {
     const { ssrCount, csrCount, isCSR, error } = data;
 
@@ -1147,26 +1100,11 @@ function initSettingsTab() {
         });
     }
 
-    // ── Dark Mode Toggle ──
+    // ── Dark Mode Toggle (session-only, resets on popup close) ──
     if (darkModeToggle) {
-        // Load persisted dark mode preference
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            chrome.storage.local.get(['darkMode'], (result) => {
-                if (result.darkMode) {
-                    document.body.classList.add('dark-theme');
-                    darkModeToggle.checked = true;
-                }
-            });
-        }
-
-        // Toggle dark mode on change
         darkModeToggle.addEventListener('change', () => {
             const isDark = darkModeToggle.checked;
             document.body.classList.toggle('dark-theme', isDark);
-
-            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-                chrome.storage.local.set({ darkMode: isDark });
-            }
         });
     }
 }
